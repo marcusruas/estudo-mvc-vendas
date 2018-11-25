@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -47,13 +48,13 @@ namespace SalesWebMvc.Controllers
         {
             if(id == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Erro: Não foi fornecido o ID de forma adequada"});
             }
 
             var obj = _sellerservice.FindById(id.Value);
             if (obj == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Erro: Vendedor não existente!" });
             }
 
             return View(obj);
@@ -71,13 +72,13 @@ namespace SalesWebMvc.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Erro: Não foi fornecido o ID de forma adequada" });;
             }
 
             var obj = _sellerservice.FindById(id.Value);
             if (obj == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Erro: Vendedor não existente!" });
             }
 
             return View(obj);
@@ -113,14 +114,16 @@ namespace SalesWebMvc.Controllers
                 _sellerservice.Update(seller);
                 return RedirectToAction(nameof(Index));
             }
-            catch(NotFoundException e)
+            catch(ApplicationException e)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = e.Message });
             }
-            catch(DbConCurrencyException e)
-            {
-                return BadRequest();
-            }
+        }
+        
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel { Message = message, RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier };
+            return View(viewModel);
         }
     }
 }
