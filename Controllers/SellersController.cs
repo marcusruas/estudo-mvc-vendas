@@ -68,15 +68,22 @@ namespace SalesWebMvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _sellerservice.RemoveAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _sellerservice.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch(IntegrityException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
         }
 
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Erro: Não foi fornecido o ID de forma adequada" });;
+                return RedirectToAction(nameof(Error), new { message = "Erro: Não foi fornecido o ID de forma adequada" });
             }
 
             var obj = await _sellerservice.FindByIdAsync(id.Value);
